@@ -1,0 +1,53 @@
+import tkinter as tk
+from tkinter import simpledialog
+
+class Carnet_dOrdre:
+
+    def __init__(self):
+        self.type_dOrdre = None
+        self.quantite = None
+        self.option = None
+
+    def show_input_box(self):
+        while True:
+            user_input = simpledialog.askstring("Input", "Veuillez entrer le type d'ordre (vente ou achat):")
+            if user_input.lower() == "vente" or user_input.lower() == "achat":
+                self.type_dOrdre = user_input.lower()
+                break
+            else:
+                print("La valeur doit être soit 'vente' soit 'achat'. Veuillez réessayer.")
+
+        # Demander la quantité
+        while True:
+            quantite_input = simpledialog.askinteger("Input", "Veuillez entrer la quantité:")
+            if quantite_input is not None and quantite_input > 0:
+                self.quantite = quantite_input
+                break
+            else:
+                print("La quantité doit être un entier positif. Veuillez réessayer.")
+
+        # Demander l'option
+        while True:
+            option_input = simpledialog.askstring("Input", "Veuillez entrer l'option (illimité ou marché):")
+            if option_input.lower() == "illimité" or option_input.lower() == "marché":
+                self.option = option_input.lower()
+                break
+            else:
+                print("La valeur doit être soit 'illimité' soit 'marché'. Veuillez réessayer.")
+        print("Type d'ordre:", self.type_dOrdre)
+        print("Quantité:", self.quantite)
+        print("Option:", self.option)
+
+# Création de la fenêtre principale
+root = tk.Tk()
+root.title("Carnet d'Ordre")
+
+# Création d'une instance de la classe Carnet_dOrdre
+mon_carnet = Carnet_dOrdre()
+
+# Création d'un bouton pour afficher la boîte de dialogue de saisie
+button = tk.Button(root, text="Saisir les détails de l'ordre", command=mon_carnet.show_input_box)
+button.pack(pady=10)
+
+# Lancement de la boucle principale de la fenêtre
+root.mainloop()
