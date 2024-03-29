@@ -51,3 +51,30 @@ button.pack(pady=10)
 
 # Lancement de la boucle principale de la fenêtre
 root.mainloop()
+
+def Simulateur ( achat, vente ):
+
+    qté = self.quantité
+    ordre = self.option
+    type = self.type_dOrdre 
+
+if type = "vente" : 
+    if ordre = "marché":
+            while qté != 0 :
+                if qté >= achat[0][0]  :
+                    qté = qté - achat[0][0] 
+                    achat[0].pop[0]
+                    achat[1].pop[0]  
+                    
+            
+
+
+
+
+
+
+
+
+
+
+
