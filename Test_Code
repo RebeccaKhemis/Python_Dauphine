@@ -89,6 +89,7 @@ if type = "vente" :
                     qté = qté - achat[0][0]
                     achat[0].pop[1]
                     achat[1].pop[1]
+            if qté <> 0 : 
             while limite > vente[1][i] : 
                 i = i + 1 
                 vente[1].insert[i,limite]
