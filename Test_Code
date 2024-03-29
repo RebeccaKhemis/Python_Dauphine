@@ -53,6 +53,7 @@ button.pack(pady=10)
 root.mainloop()
 
 # fonction qui va simuler notre carnetd 'ordre en focntion du type d'ordre et de l'option 
+# peut etre pas une focntion mais une methode de la classe carnet d'ordre ?????????
 
 def Simulateur ( achat, vente ):
 
