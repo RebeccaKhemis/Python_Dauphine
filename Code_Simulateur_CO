@@ -1,0 +1,155 @@
+#Simulation d'un carnet d'ordre ( facteurs : vente/achat , maker/taker , prix , quantité )
+
+#definition de la classe "OrderBook"
+class OrderBook:
+
+    #methode d'initialisation
+    def __init__(self, transactions):
+        self.transactions = transactions
+
+    #methode de placement de l'ordre dans le carnet en fonction du type d'ordre ( achat ou vente )
+    def place_order(self, user_type, user_quantity, user_symbol, limit=None):
+        #ordre de vente 
+        if user_type == "sell":
+            if user_symbol == "taker":
+                self.process_taker_sell(user_quantity)
+            else:
+                self.process_maker_sell(user_quantity, limit)
+        #ordre d'achat
+        elif user_type == "buy":
+            if user_symbol == "taker":
+                self.process_taker_buy(user_quantity)
+            else:
+                self.process_maker_buy(user_quantity, limit)
+                
+    # processus de simulation si l'ordre est un "ordre de vente de marché "
+    def process_taker_sell(self, user_quantity):
+        i = 0
+        while i < len(self.transactions["Buy"]) and user_quantity > 0:
+            if self.transactions["Buy"][i]["quantity"] > user_quantity:
+                self.transactions["Buy"][i]["quantity"] -= user_quantity
+                print("Your order has been placed.")
+                print(self.transactions)
+                user_quantity = 0
+                break
+            elif self.transactions["Buy"][i]["quantity"] <= user_quantity:
+                user_quantity -= self.transactions["Buy"][i]["quantity"]
+                del self.transactions["Buy"][i]
+                print("Partial order placed, looking for more...")
+            else:
+                i += 1
+        if user_quantity > 0:
+            print("Your order has not been totally placed. Remaining quantity:", user_quantity)
+            self.transactions["Sell"].append({"symbol": "taker", "type": "sell", "quantity": user_quantity})
+            print("Updated sell transactions:", self.transactions["Sell"])
+        else:
+            print("All your orders have been successfully placed.")
+
+    # processus de simulation si l'ordre est un "ordre d'achat limité "
+    def process_maker_sell(self, user_quantity, limit):
+        j = 0
+        while j < len(self.transactions["Buy"]) and user_quantity > 0:
+            if self.transactions["Buy"][j]["quantity"] >= user_quantity and self.transactions["Buy"][j]["price"] > limit:
+                self.transactions["Buy"][j]["quantity"] -= user_quantity
+                print("Your order has been placed.")
+                print(self.transactions)
+                user_quantity = 0
+                break
+            elif self.transactions["Buy"][j]["quantity"] < user_quantity and self.transactions["Buy"][j]["price"] > limit:
+                print("Partial order placed, looking for more...")
+                user_quantity -= self.transactions["Buy"][j]["quantity"]
+                del self.transactions["Buy"][j]
+            elif self.transactions["Buy"][j]["price"] <= limit:
+                print("Your order cannot be placed at the current price limit. It will be added to the sell order book.")
+                self.transactions["Sell"].append({"symbol": "maker", "type": "sell", "quantity": user_quantity, "price": limit})
+                self.transactions["Sell"] = sorted(self.transactions["Sell"], key=lambda x: x["price"])
+                print(self.transactions)
+                break
+            else:
+                j += 1
+                
+    # processus de simulation si l'ordre est un "ordre d'achat de marché "
+    def process_taker_buy(self, user_quantity):
+        i = 0
+        while i < len(self.transactions["Sell"]) and user_quantity > 0:
+            if self.transactions["Sell"][i]["quantity"] > user_quantity:
+                self.transactions["Sell"][i]["quantity"] -= user_quantity
+                print("Your purchase order has been placed.")
+                print(self.transactions)
+                user_quantity = 0
+                break
+            elif self.transactions["Sell"][i]["quantity"] <= user_quantity :
+                user_quantity -= self.transactions["Sell"][i]["quantity"]
+                del self.transactions["Sell"][i]
+                print("Partial purchase order placed, looking for more...")
+            else:
+                i += 1
+        if user_quantity > 0:
+            print("Your purchase order has not been totally placed. Remaining quantity:", user_quantity)
+            self.transactions["Buy"].append({"symbol": "taker", "type": "buy", "quantity": user_quantity})
+            print("Updated buy transactions:", self.transactions["Buy"])
+        else:
+            print("All your purchase orders have been successfully placed.")
+
+    # processus de simulation si l'ordre est un "ordre d'achat limité"
+    def process_maker_buy(self, user_quantity, limit):
+        j = 0
+        while j < len(self.transactions["Sell"]) and user_quantity > 0:
+            if self.transactions["Sell"][j]["quantity"] >= user_quantity and (self.transactions["Sell"][j]["price"] <= limit or limit is None):
+                self.transactions["Sell"][j]["quantity"] -= user_quantity
+                print("Your purchase order has been placed.")
+                print(self.transactions)
+                user_quantity = 0
+                break
+            elif self.transactions["Sell"][j]["quantity"] < user_quantity and (self.transactions["Sell"][j]["price"] <= limit or limit is None):
+                print("Partial purchase order placed, looking for more...")
+                user_quantity -= self.transactions["Sell"][j]["quantity"]
+                del self.transactions["Sell"][j]
+            elif self.transactions["Sell"][j]["price"] > limit:
+                print("No suitable sell orders found at your price limit. Adding to buy order book.")
+                self.transactions["Buy"].append({"symbol": "maker", "type": "buy", "quantity": user_quantity, "price": limit})
+                self.transactions["Buy"] = sorted(self.transactions["Buy"], key=lambda x: x["price"])
+                print(self.transactions)
+                break
+            else:
+                j += 1
+        if user_quantity > 0:
+            print("Your purchase order has not been totally placed. Remaining quantity:", user_quantity)
+            self.transactions["Buy"].append({"symbol": "maker", "type": "buy", "quantity": user_quantity, "price": limit})
+            print("Updated buy transactions:", self.transactions["Buy"])
+        else:
+            print("All your purchase orders have been successfully placed.")
+
+
+# Exemple de carnet d'ordre 
+transactions = {
+    "Buy": [
+        {"symbol": "taker", "type": "buy", "quantity": 0.4, "price": 28090.4, "date": "2022-05-21"},
+        {"symbol": "taker", "type": "buy", "quantity": 0.7, "price": 27090.4, "date": "2022-03-07"},
+        {"symbol": "taker", "type": "buy", "quantity": 0.3, "price": 25090.4, "date": "2022-06-02"},
+        {"symbol": "maker", "type": "buy", "quantity": 0.2, "price": 1950, "date": "2022-06-02"},
+        {"symbol": "maker", "type": "buy", "quantity": 0.6, "price": 1754, "date": "2022-05-21"}
+    ],
+    "Sell": [
+        {"symbol": "maker", "type": "sell", "quantity": 3, "price": 2100.67, "date": "2022-06-29"},
+        {"symbol": "taker", "type": "sell", "quantity": 0.1, "price": 26561.4, "date": "2022-04-12"},
+        {"symbol": "taker", "type": "sell", "quantity": 0.5, "price": 32034.67, "date": "2022-06-29"}
+    ]
+}
+#Appel des fonctions et de la classe pour lancer le code 
+book = OrderBook(transactions)
+user_type = input("Enter your type (buy/sell): ")
+user_quantity = float(input("Enter your quantity: "))
+user_symbol = input("Enter your symbol (maker/taker): ")
+if user_type == "buy":
+    if user_symbol == "maker":
+        limit_price = float(input("Enter your limit price: "))  
+        book.place_order(user_type, user_quantity, user_symbol, limit_price)
+    else:
+        book.place_order(user_type, user_quantity, user_symbol)
+else :
+    if user_symbol == "maker":
+        limit_price = float(input("Enter your limit price: "))  
+        book.place_order(user_type, user_quantity, user_symbol, limit_price)
+    else:
+        book.place_order(user_type, user_quantity, user_symbol)
